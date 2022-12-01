@@ -8,14 +8,17 @@
         <version>3.0.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>fmi.poststead</groupId>
+
+    <groupId>io.poststead</groupId>
     <artifactId>poststeaduserservice</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>PostSteadUsersService</name>
+    <name>PostSteadUserService</name>
     <description>PostSteadUsersService</description>
+
     <properties>
         <java.version>17</java.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
