@@ -5,7 +5,7 @@ import io.poststead.poststeaduserservice.exception.user_exception.UserNotFoundEx
 import io.poststead.poststeaduserservice.model.Role;
 import io.poststead.poststeaduserservice.model.User;
 import io.poststead.poststeaduserservice.model.dto.UserDetailsDto;
-import io.poststead.poststeaduserservice.model.dto.UserDto;
+import io.poststead.poststeaduserservice.model.dto.UserAuthDto;
 import io.poststead.poststeaduserservice.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,14 +22,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User addUser(UserDto userDto) {
-        if (userRepository.existsByUsername(userDto.getName())) {
-            throw new UserAlreadyExistsException(userDto.getName());
+    public User addUser(UserAuthDto userAuthDto) {
+        if (userRepository.existsByUsername(userAuthDto.getUserName())) {
+            throw new UserAlreadyExistsException(userAuthDto.getUserName());
         }
 
         return userRepository.save(User.builder()
-                .username(userDto.getName())
-                .password(passwordEncoder.encode(userDto.getPassword()))
+                .username(userAuthDto.getUserName())
+                .password(passwordEncoder.encode(userAuthDto.getPassword()))
                 .role(Role.MEMBER)
                 .build());
     }
@@ -46,6 +46,7 @@ public class UserService {
     public UserDetailsDto updateUser(User user, UserDetailsDto userDetailsDto) {
         User updatedUser = updateUser(updateUserWithGivenDetails(user, userDetailsDto));
         return UserDetailsDto.builder()
+                .id(updatedUser.getId())
                 .name(updatedUser.getUsername())
                 .firstName(updatedUser.getFirstName())
                 .lastName(updatedUser.getLastName())
@@ -60,8 +61,12 @@ public class UserService {
 
     public void deleteUser(String username) {
         userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
-        userRepository.deleteByUsername(username);
+                .ifPresentOrElse(
+                        existingUser -> userRepository.deleteByUsername(existingUser.getUsername()),
+                        () -> {
+                            throw new UserNotFoundException(username);
+                        }
+                );
     }
 
     private User updateUserWithGivenDetails(User user, UserDetailsDto userDetailsDto) {

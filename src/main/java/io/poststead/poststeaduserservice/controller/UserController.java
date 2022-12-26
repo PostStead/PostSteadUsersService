@@ -1,29 +1,36 @@
 package io.poststead.poststeaduserservice.controller;
 
-import io.poststead.poststeaduserservice.facade.UserFacade;
+import io.poststead.poststeaduserservice.model.dto.UserAuthDto;
 import io.poststead.poststeaduserservice.model.dto.UserDetailsDto;
-import io.poststead.poststeaduserservice.model.dto.UserDto;
+import io.poststead.poststeaduserservice.service.UserFacade;
 import lombok.AllArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/user")
+@RequestMapping("api/users")
 @AllArgsConstructor
 class UserController {
 
     private final UserFacade userFacade;
 
+    private final RabbitTemplate rabbitTemplate;
+
     @GetMapping(value = "/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDetailsDto> getUser(@PathVariable String username) {
-        return ResponseEntity.ok(userFacade.getUserByUsername(username));
+        ResponseEntity<UserDetailsDto> result = ResponseEntity.ok(userFacade.getUserByUsername(username));
+        sendRabbitMessage(result.toString());
+        return result;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> addUser(@RequestBody UserDto user) {
-        return ResponseEntity.created(userFacade.addUser(user)).build();
+    public ResponseEntity<Void> addUser(@RequestBody UserAuthDto user) {
+        ResponseEntity<Void> result = ResponseEntity.created(userFacade.addUser(user)).build();
+        sendRabbitMessage(result.toString());
+        return result;
     }
 
     @PreAuthorize("principal.username == #username")
@@ -32,13 +39,21 @@ class UserController {
             @PathVariable String username,
             @RequestBody UserDetailsDto userDetailsDto
     ) {
-        return ResponseEntity.ok(userFacade.updateUser(username, userDetailsDto));
+        ResponseEntity<UserDetailsDto> result = ResponseEntity.ok(userFacade.updateUser(username, userDetailsDto));
+        sendRabbitMessage(result.toString());
+        return result;
     }
 
     @PreAuthorize("principal.username == #username")
     @DeleteMapping(value = "/delete/{username}")
     public ResponseEntity<Void> deleteUser(@PathVariable String username) {
         userFacade.deleteUser(username);
-        return ResponseEntity.noContent().build();
+        ResponseEntity<Void> result = ResponseEntity.noContent().build();
+        sendRabbitMessage(result.toString());
+        return result;
+    }
+
+    private void sendRabbitMessage(String event) {
+        rabbitTemplate.convertAndSend("io.poststead.exchange", "io.poststead.audit", event);
     }
 }

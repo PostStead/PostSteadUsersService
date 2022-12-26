@@ -1,10 +1,9 @@
-package io.poststead.poststeaduserservice.facade;
+package io.poststead.poststeaduserservice.service;
 
 import io.poststead.poststeaduserservice.exception.user_exception.UserAlreadyExistsException;
 import io.poststead.poststeaduserservice.model.User;
+import io.poststead.poststeaduserservice.model.dto.UserAuthDto;
 import io.poststead.poststeaduserservice.model.dto.UserDetailsDto;
-import io.poststead.poststeaduserservice.model.dto.UserDto;
-import io.poststead.poststeaduserservice.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +18,13 @@ public class UserFacade {
     public UserDetailsDto getUserByUsername(String username) {
         User user = userService.getUserByUsername(username);
         return UserDetailsDto.builder()
+                .id(user.getId())
                 .name(user.getUsername())
                 .email(user.getEmail())
                 .build();
     }
 
-    public URI addUser(UserDto user) {
+    public URI addUser(UserAuthDto user) {
         User newUser = userService.addUser(user);
         return userService.createUserURI(newUser);
     }
