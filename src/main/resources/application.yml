@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     open-in-view: false
     properties:
       hibernate:
@@ -15,11 +15,11 @@ spring:
     username: postgres
     password: pR01#ctj(v*d@!ddA
   rabbitmq:
-    host: ${RABBIT_MQ_HOST:localhost}
-    port: ${RABBIT_MQ_PORT:5672}
+    host: localhost
+    port: 5672
     virtual-host: ${RABBIT_MQ_VIRTUAL_HOST:/}
-    username: ${RABBIT_MQ_USERNAME:rabbitmq}
-    password: ${RABBIT_MQ_PWD:pjk%ss]@o*e0!@N}
+    username: rabbitmq
+    password: pjk%ss]@o*e0!@N
     ssl:
       enabled: ${RABBIT_MQ_SECURED:false}
     listener:
