@@ -5,7 +5,7 @@ import io.poststead.poststeaduserservice.exception.ResourceNotFoundException;
 public class UserNotFoundException extends ResourceNotFoundException {
 
     public UserNotFoundException(String username) {
-        super("User with username " + username + " was not found!");
+        super("User, " + username + ", was not found!");
     }
 
 }

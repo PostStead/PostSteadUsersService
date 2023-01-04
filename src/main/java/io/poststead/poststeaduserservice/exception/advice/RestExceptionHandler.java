@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import io.poststead.poststeaduserservice.exception.user_exception.UserNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -41,8 +41,8 @@ public class RestExceptionHandler {
                 .body(exception.getMessage());
     }
 
-    @ExceptionHandler(value = {UsernameNotFoundException.class})
-    protected ResponseEntity<Object> handleException(UsernameNotFoundException exception) {
+    @ExceptionHandler(value = {UserNotFoundException.class})
+    protected ResponseEntity<Object> handleException(UserNotFoundException exception) {
         sendRabbitMessage(exception.getMessage());
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
@@ -58,7 +58,7 @@ public class RestExceptionHandler {
     }
 
     private void sendRabbitMessage(String event) {
-        rabbitTemplate.convertAndSend("io.poststead", "io.poststead.events", event);
+        rabbitTemplate.convertAndSend("io.poststead.exchange", "io.poststead.audit", event);
     }
 
 }

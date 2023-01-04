@@ -3,9 +3,9 @@ package io.poststead.poststeaduserservice.service;
 import io.poststead.poststeaduserservice.exception.user_exception.UserAlreadyExistsException;
 import io.poststead.poststeaduserservice.exception.user_exception.UserNotFoundException;
 import io.poststead.poststeaduserservice.model.Role;
-import io.poststead.poststeaduserservice.model.User;
-import io.poststead.poststeaduserservice.model.dto.UserDetailsDto;
+import io.poststead.poststeaduserservice.model.UserEntity;
 import io.poststead.poststeaduserservice.model.dto.UserAuthDto;
+import io.poststead.poststeaduserservice.model.dto.UserDetailsDto;
 import io.poststead.poststeaduserservice.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,60 +22,60 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User addUser(UserAuthDto userAuthDto) {
+    public UserEntity addUser(UserAuthDto userAuthDto) {
         if (userRepository.existsByUsername(userAuthDto.getUserName())) {
             throw new UserAlreadyExistsException(userAuthDto.getUserName());
         }
 
-        return userRepository.save(User.builder()
-                .username(userAuthDto.getUserName())
-                .password(passwordEncoder.encode(userAuthDto.getPassword()))
-                .role(Role.MEMBER)
-                .build());
+        return userRepository.save(UserEntity.builder()
+            .username(userAuthDto.getUserName())
+            .password(passwordEncoder.encode(userAuthDto.getPassword()))
+            .role(Role.MEMBER)
+            .build());
     }
 
-    public URI createUserURI(User user) {
-        return URI.create(GET_USER_ROUTE + user.getUsername());
+    public URI createUserURI(UserEntity userEntity) {
+        return URI.create(GET_USER_ROUTE + userEntity.getUsername());
     }
 
-    public User getUserByUsername(String username) {
+    public UserEntity getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
+            .orElseThrow(() -> new UserNotFoundException(username));
     }
 
-    public UserDetailsDto updateUser(User user, UserDetailsDto userDetailsDto) {
-        User updatedUser = updateUser(updateUserWithGivenDetails(user, userDetailsDto));
+    public UserDetailsDto updateUser(UserEntity userEntity, UserDetailsDto userDetailsDto) {
+        UserEntity updatedUserEntity = updateUser(updateUserWithGivenDetails(userEntity, userDetailsDto));
         return UserDetailsDto.builder()
-                .id(updatedUser.getId())
-                .name(updatedUser.getUsername())
-                .firstName(updatedUser.getFirstName())
-                .lastName(updatedUser.getLastName())
-                .email(updatedUser.getEmail())
-                .phone(updatedUser.getPhone())
-                .build();
+            .id(updatedUserEntity.getId())
+            .name(updatedUserEntity.getUsername())
+            .firstName(updatedUserEntity.getFirstName())
+            .lastName(updatedUserEntity.getLastName())
+            .email(updatedUserEntity.getEmail())
+            .phone(updatedUserEntity.getPhone())
+            .build();
     }
 
-    public User updateUser(User user) {
-        return userRepository.save(user);
+    public UserEntity updateUser(UserEntity userEntity) {
+        return userRepository.save(userEntity);
     }
 
     public void deleteUser(String username) {
         userRepository.findByUsername(username)
-                .ifPresentOrElse(
-                        existingUser -> userRepository.deleteByUsername(existingUser.getUsername()),
-                        () -> {
-                            throw new UserNotFoundException(username);
-                        }
-                );
+            .ifPresentOrElse(
+                existingUserEntity -> userRepository.deleteByUsername(existingUserEntity.getUsername()),
+                () -> {
+                    throw new UserNotFoundException(username);
+                }
+            );
     }
 
-    private User updateUserWithGivenDetails(User user, UserDetailsDto userDetailsDto) {
-        user.setUsername(userDetailsDto.getName() == null ? user.getUsername() : userDetailsDto.getName());
-        user.setFirstName(userDetailsDto.getFirstName() == null ? user.getFirstName() : userDetailsDto.getFirstName());
-        user.setLastName(userDetailsDto.getLastName() == null ? user.getLastName() : userDetailsDto.getLastName());
-        user.setEmail(userDetailsDto.getEmail() == null ? user.getEmail() : userDetailsDto.getEmail());
-        user.setPhone(userDetailsDto.getPhone() == null ? user.getPhone() : userDetailsDto.getPhone());
-        return user;
+    private UserEntity updateUserWithGivenDetails(UserEntity userEntity, UserDetailsDto userDetailsDto) {
+        userEntity.setUsername(userDetailsDto.getName() == null ? userEntity.getUsername() : userDetailsDto.getName());
+        userEntity.setFirstName(userDetailsDto.getFirstName() == null ? userEntity.getFirstName() : userDetailsDto.getFirstName());
+        userEntity.setLastName(userDetailsDto.getLastName() == null ? userEntity.getLastName() : userDetailsDto.getLastName());
+        userEntity.setEmail(userDetailsDto.getEmail() == null ? userEntity.getEmail() : userDetailsDto.getEmail());
+        userEntity.setPhone(userDetailsDto.getPhone() == null ? userEntity.getPhone() : userDetailsDto.getPhone());
+        return userEntity;
     }
 
 }
