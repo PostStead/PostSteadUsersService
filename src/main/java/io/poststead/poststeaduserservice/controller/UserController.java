@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/users")
 @AllArgsConstructor
-@CrossOrigin("*")
+@CrossOrigin(origins = "http://localhost:4200")
 class UserController {
 
     private final UserFacade userFacade;
@@ -38,8 +38,7 @@ class UserController {
     @PutMapping(value = "/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDetailsDto> updateUser(
             @PathVariable String username,
-            @RequestBody UserDetailsDto userDetailsDto
-    ) {
+            @RequestBody UserDetailsDto userDetailsDto) {
         ResponseEntity<UserDetailsDto> result = ResponseEntity.ok(userFacade.updateUser(username, userDetailsDto));
         sendRabbitMessage(result.toString());
         return result;
